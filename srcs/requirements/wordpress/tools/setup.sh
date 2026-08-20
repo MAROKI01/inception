@@ -11,6 +11,7 @@ echo "Starting WordPress setup..."
 if [ -z "$MYSQL_DATABASE" ] ||
    [ -z "$MYSQL_USER" ] ||
    [ -z "$MYSQL_HOST" ] ||
+   [ -z "$MYSQL_PORT" ] ||
    [ -z "$DOMAIN_NAME" ] ||
    [ -z "$WP_TITLE" ] ||
    [ -z "$WP_ADMIN_USER" ] ||
@@ -80,6 +81,7 @@ echo "Waiting for MariaDB..."
 until mariadb-admin \
     --host="$MYSQL_HOST" \
     --user="$MYSQL_USER" \
+    --port="$MYSQL_PORT" \
     --password="$MYSQL_PASSWORD" \
     --silent \
     ping
@@ -130,20 +132,14 @@ if [ ! -f "/var/www/html/wp-config.php" ]; then
 
     echo "Creating wp-config.php..."
 
-    cp /var/www/html/wp-config-sample.php \
-       /var/www/html/wp-config.php
-
-    sed -i "s/database_name_here/$MYSQL_DATABASE/" \
-        /var/www/html/wp-config.php
-
-    sed -i "s/username_here/$MYSQL_USER/" \
-        /var/www/html/wp-config.php
-
-    sed -i "s/password_here/$MYSQL_PASSWORD/" \
-        /var/www/html/wp-config.php
-
-    sed -i "s/localhost/$MYSQL_HOST/" \
-        /var/www/html/wp-config.php
+    wp config create \
+        --dbname="$MYSQL_DATABASE" \
+        --dbuser="$MYSQL_USER" \
+        --dbpass="$MYSQL_PASSWORD" \
+        --dbhost="$MYSQL_HOST:$MYSQL_PORT" \
+        --path=/var/www/html \
+        --skip-check \
+        --allow-root
 
     echo "wp-config.php created."
 

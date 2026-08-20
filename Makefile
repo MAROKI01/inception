@@ -4,12 +4,20 @@ COMPOSE = docker compose -f srcs/docker-compose.yml
 DATA_DIR = /home/ntahadou/data
 MYSQL_DATA = $(DATA_DIR)/mariadb
 WORDPRESS_DATA = $(DATA_DIR)/wordpress
+DOMAIN_NAME := $(shell grep '^DOMAIN_NAME=' srcs/.env | cut -d '=' -f2)
+
 
 all: setup up
 
 setup:
-	mkdir -p $(MYSQL_DATA)
-	mkdir -p $(WORDPRESS_DATA)
+	sudo mkdir -p $(MYSQL_DATA)
+	sudo mkdir -p $(WORDPRESS_DATA)
+	@if ! grep -qE "^[[:space:]]*127\.0\.0\.1[[:space:]].*\b$(DOMAIN_NAME)\b" /etc/hosts; then \
+		echo "Adding $(DOMAIN_NAME) to /etc/hosts..."; \
+		echo "127.0.0.1 $(DOMAIN_NAME)" | sudo tee -a /etc/hosts > /dev/null; \
+	else \
+		echo "$(DOMAIN_NAME) already exists in /etc/hosts."; \
+	fi
 
 build:
 	$(COMPOSE) build
@@ -41,11 +49,12 @@ clean:
 fclean:
 	$(COMPOSE) down -v
 	docker system prune -af
-	rm -rf $(MYSQL_DATA)
-	rm -rf $(WORDPRESS_DATA)
+	sudo rm -rf $(MYSQL_DATA)
+	sudo rm -rf $(WORDPRESS_DATA)
 
 re:
 	$(MAKE) fclean
+	$(MAKE) setup
 	$(MAKE) build
 	$(MAKE) up
 
