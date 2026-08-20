@@ -4,9 +4,7 @@ set -e
 
 echo "Starting WordPress setup..."
 
-# --------------------------------------------------
 # Check required environment variables
-# --------------------------------------------------
 
 if [ -z "$MYSQL_DATABASE" ] ||
    [ -z "$MYSQL_USER" ] ||
@@ -25,9 +23,8 @@ fi
 
 echo "WordPress environment variables are set."
 
-# --------------------------------------------------
+
 # Read secrets
-# --------------------------------------------------
 
 if [ ! -f /run/secrets/db_password ] ||
    [ ! -f /run/secrets/credentials ]; then
@@ -52,9 +49,7 @@ if [ -z "$MYSQL_PASSWORD" ] ||
     exit 1
 fi
 
-# --------------------------------------------------
 # Validate administrator username
-# --------------------------------------------------
 
 case "$WP_ADMIN_USER" in
     *admin*|*Admin*|*ADMIN*)
@@ -72,9 +67,7 @@ esac
 
 echo "Administrator username is valid."
 
-# --------------------------------------------------
 # Wait for MariaDB
-# --------------------------------------------------
 
 echo "Waiting for MariaDB..."
 
@@ -92,15 +85,11 @@ done
 
 echo "MariaDB is ready."
 
-# --------------------------------------------------
 # Prepare WordPress directory
-# --------------------------------------------------
 
 mkdir -p /var/www/html
 
-# --------------------------------------------------
 # Download WordPress
-# --------------------------------------------------
 
 if [ ! -f "/var/www/html/wp-settings.php" ]; then
 
@@ -124,9 +113,7 @@ else
 
 fi
 
-# --------------------------------------------------
 # Configure WordPress
-# --------------------------------------------------
 
 if [ ! -f "/var/www/html/wp-config.php" ]; then
 
@@ -149,9 +136,7 @@ else
 
 fi
 
-# --------------------------------------------------
 # Install WordPress
-# --------------------------------------------------
 
 if ! wp core is-installed \
     --path=/var/www/html \
@@ -178,9 +163,7 @@ else
 
 fi
 
-# --------------------------------------------------
 # Create second WordPress user
-# --------------------------------------------------
 
 if ! wp user get "$WP_USER" \
     --path=/var/www/html \
@@ -205,9 +188,7 @@ else
 
 fi
 
-# --------------------------------------------------
 # Configure PHP-FPM
-# --------------------------------------------------
 
 echo "Configuring PHP-FPM..."
 
@@ -216,15 +197,11 @@ mkdir -p /run/php
 sed -i 's|^listen = .*|listen = 0.0.0.0:9000|' \
     /etc/php/8.2/fpm/pool.d/www.conf
 
-# --------------------------------------------------
 # Fix permissions
-# --------------------------------------------------
 
 chown -R www-data:www-data /var/www/html
 
-# --------------------------------------------------
 # Start PHP-FPM as PID 1
-# --------------------------------------------------
 
 echo "Starting PHP-FPM..."
 

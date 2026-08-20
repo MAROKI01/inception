@@ -2,9 +2,7 @@
 
 set -e
 
-# --------------------------------------------------
 # Check required environment variables and secrets
-# --------------------------------------------------
 
 if [ -z "$MYSQL_DATABASE" ] || [ -z "$MYSQL_USER" ]; then
     echo "Error: required MariaDB environment variables are not set."
@@ -20,16 +18,12 @@ fi
 MYSQL_PASSWORD=$(cat /run/secrets/db_password)
 MYSQL_ROOT_PASSWORD=$(cat /run/secrets/db_root_password)
 
-# --------------------------------------------------
 # Prepare runtime directory
-# --------------------------------------------------
 
 mkdir -p /run/mysqld
 chown mysql:mysql /run/mysqld
 
-# --------------------------------------------------
 # Initialize MariaDB data directory if necessary
-# --------------------------------------------------
 
 if [ ! -d "/var/lib/mysql/mysql" ]; then
     echo "Initializing MariaDB data directory..."
@@ -39,9 +33,7 @@ if [ ! -d "/var/lib/mysql/mysql" ]; then
         --datadir=/var/lib/mysql
 fi
 
-# --------------------------------------------------
 # Start MariaDB temporarily
-# --------------------------------------------------
 
 echo "Starting MariaDB temporarily..."
 
@@ -53,9 +45,7 @@ mariadbd \
 
 TEMP_PID=$!
 
-# --------------------------------------------------
 # Wait for MariaDB
-# --------------------------------------------------
 
 echo "Waiting for MariaDB to be ready..."
 
@@ -70,9 +60,7 @@ done
 
 echo "MariaDB is ready."
 
-# --------------------------------------------------
 # First-time database/user initialization
-# --------------------------------------------------
 
 if [ ! -f "/var/lib/mysql/.initialized" ]; then
 
@@ -111,9 +99,7 @@ else
 
 fi
 
-# --------------------------------------------------
 # Stop temporary MariaDB
-# --------------------------------------------------
 
 echo "Stopping temporary MariaDB server..."
 
@@ -125,11 +111,10 @@ mariadb-admin \
     shutdown 2>/dev/null || true
 
 # Wait specifically for the temporary MariaDB process
+
 wait "$TEMP_PID"
 
-# --------------------------------------------------
 # Start MariaDB as PID 1
-# --------------------------------------------------
 
 echo "Starting MariaDB..."
 
