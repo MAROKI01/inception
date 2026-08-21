@@ -115,26 +115,19 @@ fi
 
 # Configure WordPress
 
-if [ ! -f "/var/www/html/wp-config.php" ]; then
+echo "Creating wp-config.php..."
 
-    echo "Creating wp-config.php..."
+wp config create \
+    --dbname="$MYSQL_DATABASE" \
+    --dbuser="$MYSQL_USER" \
+    --dbpass="$MYSQL_PASSWORD" \
+    --dbhost="$MYSQL_HOST:$MYSQL_PORT" \
+    --path=/var/www/html \
+    --skip-check \
+    --force \
+    --allow-root
 
-    wp config create \
-        --dbname="$MYSQL_DATABASE" \
-        --dbuser="$MYSQL_USER" \
-        --dbpass="$MYSQL_PASSWORD" \
-        --dbhost="$MYSQL_HOST:$MYSQL_PORT" \
-        --path=/var/www/html \
-        --skip-check \
-        --allow-root
-
-    echo "wp-config.php created."
-
-else
-
-    echo "wp-config.php already exists."
-
-fi
+echo "wp-config.php created."
 
 # Install WordPress
 
